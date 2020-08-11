@@ -3,7 +3,8 @@ import requests
 from datetime import timedelta
 
 from django.http import HttpResponseRedirect
-from django.urls import reverse
+# from django.urls import reverse
+from django.core.urlresolvers import reverse
 from django.utils import timezone
 from django.utils.http import urlencode
 from django.views.decorators.csrf import csrf_exempt
@@ -37,7 +38,7 @@ class AppleOAuth2Adapter(OAuth2Adapter):
         try:
             data = response.json()
         except json.JSONDecodeError as e:
-            raise OAuth2Error("Error retrieving apple public key.") from e
+            raise OAuth2Error("Error retrieving apple public key.")
 
         for d in data["keys"]:
             if d["kid"] == kid:
@@ -74,7 +75,7 @@ class AppleOAuth2Adapter(OAuth2Adapter):
             return identity_data
 
         except jwt.PyJWTError as e:
-            raise OAuth2Error("Invalid id_token") from e
+            raise OAuth2Error("Invalid id_token")
 
     def parse_token(self, data):
         token = SocialToken(
@@ -91,23 +92,23 @@ class AppleOAuth2Adapter(OAuth2Adapter):
         # `user_data` is a big flat dictionary with the parsed JWT claims
         # access_tokens, and user info from the apple post.
         identity_data = self.get_verified_identity_data(data["id_token"])
-        token.user_data = {**data, **identity_data}
+        token.user_data = {data, identity_data}
 
         return token
 
     def complete_login(self, request, app, token, **kwargs):
-        extra_data = token.user_data
+        #extra_data = token.user_data
         login = self.get_provider().sociallogin_from_response(
             request=request, response=extra_data
         )
-        login.state["id_token"] = token.user_data
+        # login.state["id_token"] = token.user_data
 
         # We can safely remove the apple login session now
         # Note: The cookie will remain, but it's set to delete on browser close
-        try:
-            request.apple_login_session.delete()
-        except AttributeError:
-            pass
+        # try:
+        #     request.apple_login_session.delete()
+        # except AttributeError:
+        #     pass
 
         return login
 
@@ -129,8 +130,8 @@ class AppleOAuth2Adapter(OAuth2Adapter):
         access_token_data = client.get_access_token(code)
 
         return {
-            **access_token_data,
-            **self.get_user_scope_data(request),
+            "access_token_data": access_token_data,
+            "user_scope_data" :self.get_user_scope_data(request),
             "id_token":request.apple_login_session.get("id_token")
         }
 

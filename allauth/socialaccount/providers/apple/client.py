@@ -1,6 +1,6 @@
 import requests
 from datetime import datetime, timedelta
-from urllib.parse import parse_qsl, quote, urlencode
+# from urllib.parse import parse_qsl, quote, urlencode
 
 import jwt
 
@@ -65,15 +65,15 @@ class AppleOAuth2Client(OAuth2Client):
             )
         return access_token
 
-    def get_redirect_url(self, authorization_url, extra_params):
-        params = {
-            'client_id': self.get_client_id(),
-            'redirect_uri': self.callback_url,
-            'response_mode': 'form_post',
-            'scope': self.scope,
-            'response_type': "code id_token",
-        }
-        if self.state:
-            params['state'] = self.state
-        params.update(extra_params)
-        return '%s?%s' % (authorization_url, urlencode(params, quote_via=quote))
+    # def get_redirect_url(self, authorization_url, extra_params):
+    #     params = {
+    #         'client_id': self.get_client_id(),
+    #         'redirect_uri': self.callback_url,
+    #         'response_mode': 'form_post',
+    #         'scope': self.scope,
+    #         'response_type': "code id_token",
+    #     }
+    #     if self.state:
+    #         params['state'] = self.state
+    #     params.update(extra_params)
+    #     return '%s?%s' % (authorization_url, urlencode(params, quote_via=quote))

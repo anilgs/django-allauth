@@ -1,5 +1,6 @@
 from importlib import import_module
-from urllib.parse import urlparse
+# from urllib.parse import urlparse
+from urlparse import urlparse
 
 from django.conf import settings
 from django.utils.cache import patch_vary_headers
