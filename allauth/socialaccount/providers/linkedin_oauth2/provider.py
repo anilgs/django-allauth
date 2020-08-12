@@ -2,6 +2,7 @@ from allauth.socialaccount import providers
 from allauth.socialaccount.providers.base import ProviderAccount
 from allauth.socialaccount.providers.oauth2.provider import OAuth2Provider
 from allauth.socialaccount import app_settings
+from allauth.account.models import EmailAddress
 
 
 class LinkedInOAuth2Account(ProviderAccount):
@@ -33,8 +34,8 @@ class LinkedInOAuth2Provider(OAuth2Provider):
     package = 'allauth.socialaccount.providers.linkedin_oauth2'
     account_class = LinkedInOAuth2Account
 
-    def extract_uid(self, data):
-        return str(data['id'])
+    # def extract_uid(self, data):
+    #     return str(data['id'])
 
     def get_profile_fields(self):
         default_fields = ['id',
@@ -54,10 +55,31 @@ class LinkedInOAuth2Provider(OAuth2Provider):
             scope.append('r_emailaddress')
         return scope
 
+    # def extract_common_fields(self, data):
+    #     return dict(email=data.get('emailAddress'),
+    #                 first_name=data.get('firstName'),
+    #                 last_name=data.get('lastName'))
+
+
+    def extract_uid(self, data):
+        if 'id' not in  data:
+            return str(data['email']['elements'][0]['handle~']['emailAddress'])
+        else:
+            return str(data['id'])
+
     def extract_common_fields(self, data):
-        return dict(email=data.get('emailAddress'),
-                    first_name=data.get('firstName'),
-                    last_name=data.get('lastName'))
+        return dict(email=data['email']['elements'][0]['handle~']['emailAddress'],
+                    last_name=data['localizedLastName'],
+                    first_name=data['localizedFirstName'])
+
+    def extract_email_addresses(self, data):
+        ret = []
+        email = data['email']['elements'][0]['handle~']['emailAddress']
+        if email:
+            ret.append(EmailAddress(email=email,
+                       verified=True,
+                       primary=True))
+        return ret
 
 
 # providers.registry.register(LinkedInOAuth2Provider)
